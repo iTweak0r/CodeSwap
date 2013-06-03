@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>CodeSwap | {{project}}</title>
+		<style>
+		@import url(http://weloveiconfonts.com/api/?family=entypo);
+		[class*="entypo-"]:before {
+			font-family: 'entypo';
+			font-size: 15pt;
+			cursor: pointer;
+		}
+		#ie {
+			background-color: red;
+			width: 100%;
+			height: 100%;
+			color: white;
+			font-size: 20px;
+		}
+		#ie a {
+			color: lightgrey;
+		}
+		#right {
+			position: absolute;
+			right: 10px;
+			display: inline;
+			font-size: 12pt;
+		}
+		h1 {
+			font-family: "Segoe UI Light",arial,sans-serif;
+			display: inline;
+		}
+		h2 {
+			font-family: courier;
+			display: inline;
+		}
+		p {
+			font-family: Consolas,Courier,monospace;
+		}
+		#chat {
+			color: white;
+			font-family: arial;
+			cursor: pointer;
+		}
+		#codewrap, #code, .CodeMirror, #resultpanel {
+			border: 1px solid #CCCCCC;
+			cursor: text;
+		}
+		#resultpanel {
+			padding: 4px 6px;
+			height: 304px;
+		}
+		#codeframe {
+			width: 100%;
+			height: 90%;
+			border: none;
+			overflow: auto;
+		}
+		body {
+			padding: 10px;
+		}
+		#b {
+			background-color: lightgrey;
+			border: 2px solid black;
+			padding: 2px;
+			margin-bottom: 5px;
+			display: inline-block;
+			font-family: "Segoe UI Light",Helvetica,Arial,sans-serif;
+		}
+		#code {
+			width: 100%;
+			font-family: Consolas,"Courier New",monospace;
+		}
+		#files {
+			padding: 5px;
+			background-color: black;
+			color: white;
+			height: 304px;
+			font-size: 14pt;
+			display: none;
+		}
+		#files a {
+			color: #8DF;
+		}
+		#files a:hover {
+			color: #5AC;
+		}
+		</style>
+
+		<script src="{{url_for('static', filename='jquery.js')}}"></script>
+
+		<script>
+		$(function() {
+			var filesDisplayed = false;
+			var filename = "{{startf}}";
+			
+			window.displayFile = function(filename) {
+				$("#codeframe").attr("src", renderRoot + filename);
+			};
+			
+			window.newFile = function() {
+				var f = prompt("Name of new file");
+				jQuery.get("{{url_for('create_file', name=project)}}", {'filename':f}, function() {
+					window.clickedFile(f);
+				});
+			};
+			
+			window.toggleFiles = function() {
+				//files starts with left arrow
+				if (filesDisplayed) {
+					//hide files
+					$("#resultpanel").css("display", "block");
+					$("#files").css("display", "none");
+					$("#expand").removeClass("entypo-right-circled");
+					$("#expand").addClass("entypo-left-circled");
+				} else {
+					//show files
+					$("#resultpanel").css("display", "none");
+					$("#files").css("display", "block");
+					$("#expand").removeClass("entypo-left-circled");
+					$("#expand").addClass("entypo-right-circled");
+				}
+				filesDisplayed = !filesDisplayed;
+			};
+			
+			window.clickedFile = function(fname) {
+				$("#endturn").click();
+				window.displayFile(fname);
+				filename = fname;
+				window.toggleFiles();
+			};
+		
+			var renderRoot = "{{url_for('render', name=project, fname='')}}";
+			var editor = CodeMirror.fromTextArea($("#code").get(0));
+			var u = prompt("Please type in your username");
+			
+			window.displayFile(filename);
+			
+			$("#right").html("<p>Welcome, " + u + "</p>");
+			var oneSecond = 700;
+			var lastid = 0;
+			$("#submit").click(function() {
+				var m = $("#message").val();
+				jQuery.post("{{url_for('newmessage', name=project)}}", {"message":"["+u+"] "+m}, function() {
+					$("#message").val("");
+				});
+			});
+			$("#myturn").click(function() {
+				jQuery.post("{{url_for('start_turn', name=project)}}", {"name":u},function(data) {
+					if (data == "false") {
+						alert("Sorry, but another user clicked the button before you.");
+					}
+				});
+			});
+			$("#endturn").click(function() {
+				jQuery.get("{{url_for('end_turn', name=project)}}", {"name":u}, function(data) {
+					if (data == "false") {
+						console.log("This is not your turn");
+					}
+				});
+			});
+			setInterval(function() {
+				jQuery.get("{{url_for('who_turn', name=project)}}", {}, function(data) {
+					$("#whoturn").html(data);
+					if (data != "{{turnopen}}") {
+						$("#myturn").attr('disabled', 'true');
+						$("#endturn").removeAttr('disabled');
+					} else {
+						$("#endturn").attr('disabled', 'true');
+						$("#myturn").removeAttr('disabled');
+					}
+				}, "text");
+			}, oneSecond);
+			setInterval(function() {
+				jQuery.get("{{url_for('who_turn', name=project)}}", {}, function(data) {
+					if (data != u + " is having a turn") {
+						jQuery.get("{{url_for('get_code', name=project)}}", {"filename":filename}, function(data) {
+							editor.setValue(data);
+						}, "text");
+					} else {
+						var c = editor.getValue();
+						jQuery.get("{{url_for('send_code', name=project)}}", {"code":c, "filename":filename});
+					}
+				}, "text");
+			}, oneSecond);
+			setInterval(function() {
+				jQuery.get("{{url_for('check', name=project)}}", {"lastid":lastid}, function(data) {
+					var datalist = $.parseJSON(data);
+					//message = {id:data}
+					maxnum = 0
+					for (var i in datalist) {
+						$('#chat').append("<br>" + datalist[i]);
+						if (i > maxnum) {
+							maxnum = i;
+						}
+					}
+					if (maxnum > lastid) {
+						lastid = maxnum;
+					}
+				}, "text");
+			},oneSecond);
+			$("#expand").click(function() {
+				jQuery.get("{{url_for('get_files', name=project)}}", {}, function(data) {
+					$("#files").html(data);
+					window.toggleFiles();
+				});
+			});
+			$("input").bind("keydown", function(e) {
+				if (e.keyCode == 13) { //enter key
+					$("#submit").click();
+				}
+			});
+		});
+		</script>
+		
+		<script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+		
+		<script src="{{url_for('static', filename='cm/lib/codemirror.js')}}"></script>
+		
+		<script src="{{url_for('static', filename='cm/mode/xml/xml.js')}}"></script>
+		
+		<script src="{{url_for('static', filename='cm/mode/javascript/javascript.js')}}"></script>
+		
+		<script src="{{url_for('static', filename='cm/mode/css/css.js')}}"></script>
+		
+		<script src="{{url_for('static', filename='cm/mode/htmlmixed/htmlmixed.js'
+		)}}"></script>
+	
+		<link rel="stylesheet" href="{{url_for('static', filename='cm/lib/codemirror.css')}}"/>
+		
+		<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+	
+	</head>
+
+	<body>
+		<!--[if gt IE 7]>
+			<div id="ie">
+				<p>CodeSwap is not supported on this browser.</p>
+				<p>Please <a href="https://www.google.com/intl/en/chrome/browser/">upgrade to Chrome</a>.</p>
+			</div>
+		<![endif]-->
+		<div id="right">
+			<p></p>
+		</div>
+		<div id="b">
+			<h1><a href="/" id="bye">CodeSwap</a></h1>
+			<br/>
+			<h2>{{project}}</h2>
+		</div>
+		<p>Editor:</p>
+		<div class="row-fluid" id="panel">
+			<div class="span6" id="codewrap">
+				<textarea id="code" height="900px"></textarea>
+			</div>
+			<div class="span5" id="resultpanel">
+				<iframe id="codeframe" src=""></iframe>
+				<a href="{{url_for('view', name=project, filename=startf)}}" target="_blank">Fullscreen View</a>
+			</div>
+			<div class="span5" id="files">
+			</div>
+			<span id="expand" class="entypo-left-circled span1"></span>
+		</div>
+		<div class="row">
+			<div class="span12">
+				<p id="whoturn">{{turnopen}}</p>
+				<input id="myturn" type="button" value="Start Turn"/>
+				<input id="endturn" type="button" value="End Turn" disabled="true"/>
+			</div>
+		</div>
+		<div class="row" id="chadiv">
+			<div class="span12">
+				<p>Chat:</p> 
+				<div style="background-color: grey; height: 200px; width: auto; overflow-y: auto; " id="chat">
+				</div>
+				<input type="text" id="message" placeholder="Type message here" autocomplete="false"></input>
+				<input type="button" id="submit" value="Send">
+			</div>
+		</div>
+	</body>
+
+</html>

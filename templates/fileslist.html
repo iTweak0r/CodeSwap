@@ -1,0 +1,6 @@
+<ul>
+	Files <input type="button" onclick="newFile()" value="+"/>
+	{% for filename in files.keys() %}
+		<li><a href="#" onclick="window.clickedFile('{{filename}}')">{{filename}}</a></li>
+	{% endfor %}
+</ul>

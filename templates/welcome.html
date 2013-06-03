@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>CodeSwap</title>
+		<style>
+		#right {
+			position: absolute;
+			right: 10px;
+			display: inline;
+			font-size: large;
+		}
+		h1 {
+			font-family: Segoe UI Light,arial,sans-serif;
+			display: inline;
+		}
+		h2 {
+			font-family: courier;
+			display: inline;
+		}
+		p {
+			font-family: Consolas,Courier,monospace;
+		}
+		#chat {
+			color: white;
+			font-family: arial;
+		}
+		#resultpanel, #code {
+			height: 300px;
+		}
+		#resultpanel {
+			border: 1px solid #CCCCCC;
+			padding: 4px 6px;
+		}
+		body {
+			padding: 10px;
+		}
+		a {
+			background-color: white;
+		}
+		#b {
+			background-color: lightgrey;
+			border: 2px solid black;
+			padding: 2px;
+			margin-bottom: 5px;
+			display: inline-block;
+			font-family: Segoe UI Light,Helvetica,Arial,sans-serif;
+		}
+		#code {
+			width: 100%;
+			font-family: Consolas,"Courier New",monospace;
+		}
+		</style>
+
+		<script src="http://code.jqery.com/jquery.js"></script>
+		
+		<script>
+		function go() { 
+			var a = document.forms[0].elements[0].value;
+			document.location = "/project/" + a;
+		}
+		</script>
+		
+		<script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+		
+		<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+	</head>
+
+	<body>
+		<div id="right">
+			<p>Created for the CoderDojo Transatlantic Challenge</p>
+		</div>
+		<div id="b">
+			<h1>CodeSwap</h1>
+		</div>
+		<div class="row-fluid" id="panel">
+			<div class="span6">
+				<p>CodeSwap is a collaborative coding solution. People can "swap" code with each other, and also chat. Right now CodeSwap supports only HTML and JavaScript but expect more soon! It's also preloaded with JQuery and Bootstrap.</p>
+			</div>
+			<div class="span6">
+				<h4>Create or load a CodeSwap project</h4>
+				<form>
+					<input type="text" placeholder="just type in the name of a project" id="pro"/><br/>
+				</form>
+				<input type="button" value="Create/Load" onclick="go()"/>
+			</div>
+		</div>
+	</body>
+
+</html>
