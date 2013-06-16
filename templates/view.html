@@ -1,2 +1,5 @@
-{{code|safe}}
+{% if html %}
+<script src="{{url_for('static', filename='jquery.js')}}"></script>
 <style>body{padding:5px;}</style>
+{% endif %}
+{{code|safe}}

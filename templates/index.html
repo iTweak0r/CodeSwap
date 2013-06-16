@@ -98,11 +98,26 @@
 				$("#codeframe").attr("src", renderRoot + filename);
 			};
 			
-			window.newFile = function() {
+			window.newFile = function(u, pw) {
 				var f = prompt("Name of new file");
-				jQuery.get("{{url_for('create_file', name=project)}}", {'filename':f}, function() {
-					window.clickedFile(f);
-				});
+				if (f) {
+					jQuery.get("{{url_for('create_file', name=project)}}", {'filename':f, 'user':u, 'pw':pw}, function() {
+						window.clickedFile(f);
+					});
+				}
+			};
+			
+			window.removeFile = function(u, pw, filename) {
+				if (filename == "index.html") {
+					alert("You cannot delete index.html")
+				} else {
+					var sure = confirm("Are you sure?");
+					if (sure) {
+						jQuery.get("{{url_for('delete_file', name=project)}}", {'filename':filename, 'user':u, 'pw':pw}, function() {
+							window.clickedFile("index.html");
+						});
+					}
+				}
 			};
 			
 			window.toggleFiles = function() {
@@ -129,85 +144,113 @@
 				filename = fname;
 				window.toggleFiles();
 			};
-		
+			
 			var renderRoot = "{{url_for('render', name=project, fname='')}}";
 			var editor = CodeMirror.fromTextArea($("#code").get(0));
-			var u = prompt("Please type in your username");
 			
-			window.displayFile(filename);
-			
-			$("#right").html("<p>Welcome, " + u + "</p>");
-			var oneSecond = 700;
-			var lastid = 0;
-			$("#submit").click(function() {
-				var m = $("#message").val();
-				jQuery.post("{{url_for('newmessage', name=project)}}", {"message":"["+u+"] "+m}, function() {
-					$("#message").val("");
+			window.codeswap = function(pw, u) {
+				window.displayFile(filename);
+				$("#right").html("<p>Welcome, " + u + "</p>");
+				var oneSecond = 700;
+				var lastid = 0;
+				$("#submit").click(function() {
+					var m = $("#message").val();
+					jQuery.post("{{url_for('newmessage', name=project)}}", {"message":"["+u+"] "+m, "pw":pw, "user":u}, function() {
+						$("#message").val("");
+					});
 				});
-			});
-			$("#myturn").click(function() {
-				jQuery.post("{{url_for('start_turn', name=project)}}", {"name":u},function(data) {
-					if (data == "false") {
-						alert("Sorry, but another user clicked the button before you.");
-					}
-				});
-			});
-			$("#endturn").click(function() {
-				jQuery.get("{{url_for('end_turn', name=project)}}", {"name":u}, function(data) {
-					if (data == "false") {
-						console.log("This is not your turn");
-					}
-				});
-			});
-			setInterval(function() {
-				jQuery.get("{{url_for('who_turn', name=project)}}", {}, function(data) {
-					$("#whoturn").html(data);
-					if (data != "{{turnopen}}") {
-						$("#myturn").attr('disabled', 'true');
-						$("#endturn").removeAttr('disabled');
-					} else {
-						$("#endturn").attr('disabled', 'true');
-						$("#myturn").removeAttr('disabled');
-					}
-				}, "text");
-			}, oneSecond);
-			setInterval(function() {
-				jQuery.get("{{url_for('who_turn', name=project)}}", {}, function(data) {
-					if (data != u + " is having a turn") {
-						jQuery.get("{{url_for('get_code', name=project)}}", {"filename":filename}, function(data) {
-							editor.setValue(data);
-						}, "text");
-					} else {
-						var c = editor.getValue();
-						jQuery.get("{{url_for('send_code', name=project)}}", {"code":c, "filename":filename});
-					}
-				}, "text");
-			}, oneSecond);
-			setInterval(function() {
-				jQuery.get("{{url_for('check', name=project)}}", {"lastid":lastid}, function(data) {
-					var datalist = $.parseJSON(data);
-					//message = {id:data}
-					maxnum = 0
-					for (var i in datalist) {
-						$('#chat').append("<br>" + datalist[i]);
-						if (i > maxnum) {
-							maxnum = i;
+				$("#myturn").click(function() {
+					jQuery.post("{{url_for('start_turn', name=project)}}", {"name":u, "pw":pw, "user":u},function(data) {
+						if (data == "false") {
+							alert("Sorry, but another user clicked the button before you.");
 						}
-					}
-					if (maxnum > lastid) {
-						lastid = maxnum;
-					}
-				}, "text");
-			},oneSecond);
-			$("#expand").click(function() {
-				jQuery.get("{{url_for('get_files', name=project)}}", {}, function(data) {
-					$("#files").html(data);
-					window.toggleFiles();
+					});
 				});
-			});
-			$("input").bind("keydown", function(e) {
-				if (e.keyCode == 13) { //enter key
-					$("#submit").click();
+				$("#endturn").click(function() {
+					jQuery.get("{{url_for('end_turn', name=project)}}", {"name":u, "pw":pw, "user":u}, function(data) {
+						if (data == "false") {
+							console.log("This is not your turn");
+						}
+					});
+				});
+				setInterval(function() {
+					jQuery.get("{{url_for('who_turn', name=project)}}", {}, function(data) {
+						$("#whoturn").html(data);
+						if (data != "{{turnopen}}") {
+							$("#myturn").attr('disabled', 'true');
+							$("#endturn").removeAttr('disabled');
+						} else {
+							$("#endturn").attr('disabled', 'true');
+							$("#myturn").removeAttr('disabled');
+						}
+					}, "text");
+				}, oneSecond);
+				setInterval(function() {
+					jQuery.get("{{url_for('who_turn', name=project)}}", {}, function(data) {
+						if (data != u + " is having a turn") {
+							jQuery.get("{{url_for('get_code', name=project)}}", {"filename":filename}, function(data) {
+								editor.setValue(data);
+							}, "text");
+						} else {
+							var c = editor.getValue();
+							jQuery.get("{{url_for('send_code', name=project)}}", {"code":c, "filename":filename, "pw":pw, "user":u}, function(data) {if (data == "false") {
+								$("body").html("<H1>HACKARR!</H1>");
+							} });
+						}
+					}, "text");
+				}, oneSecond);
+				setInterval(function() {
+					jQuery.get("{{url_for('check', name=project)}}", {"lastid":lastid, "pw":pw, "user":u}, function(data) {
+						var datalist = $.parseJSON(data);
+						//message = {id:data}
+						maxnum = 0
+						for (var i in datalist) {
+							$('#chat').append("<br>" + datalist[i]);
+							if (i > maxnum) {
+								maxnum = i;
+							}
+						}
+						if (maxnum > lastid) {
+							lastid = maxnum;
+						}
+					}, "text");
+				},oneSecond);
+				$("#expand").click(function() {
+					jQuery.get("{{url_for('get_files', name=project)}}", {'user':u, 'pw':pw}, function(data) {
+						$("#files").html(data);
+						window.toggleFiles();
+					});
+				});
+				$("input").bind("keydown", function(e) {
+					if (e.keyCode == 13) { //enter key
+						$("#submit").click();
+					}
+				});
+			};
+			
+			var u = prompt("Please type in your username");
+			jQuery.get("{{url_for('elgible', name=project)}}", function(data) {
+				if (data == "false") {
+					var pw = prompt("Enter the password");
+					jQuery.get("{{url_for('check_pass_login', name=project)}}", {"pw":pw, "user":u}, function(data) {
+						if (data == "false") {
+							$("body").html("<h1>Wrong Password</h1><br/><a href=''>Try Again</a>");
+						} else {
+							pw = data;
+							window.codeswap(pw, u);
+						}
+					});
+				} else {
+					var pw = prompt("What do you want the password to be for this project?");
+					jQuery.get("{{url_for('set_password', name=project)}}", {"pw":pw, "user":u}, function(data) {
+						if (data == "false") {
+							$("body").html("<h1>HACKARR!</h1>");
+						} else {
+							pw = data;
+							window.codeswap(pw, u);
+						}
+					});
+
 				}
 			});
 		});

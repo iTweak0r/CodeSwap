@@ -1,6 +1,6 @@
 <ul>
-	Files <input type="button" onclick="newFile()" value="+"/>
+	Files <span class="entypo-plus-squared" style="color:white;" onclick="newFile('{{USERNAME}}', '{{TOKEN}}')"/>
 	{% for filename in files.keys() %}
-		<li><a href="#" onclick="window.clickedFile('{{filename}}')">{{filename}}</a></li>
+		<li><a href="#" onclick="window.clickedFile('{{filename}}')">{{filename}}</a> <span class="entypo-cancel-circled" style="color:white;" onclick="removeFile('{{USERNAME}}', '{{TOKEN}}', '{{filename}}')"/></li>
 	{% endfor %}
 </ul>

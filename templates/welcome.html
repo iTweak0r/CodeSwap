@@ -21,23 +21,6 @@
 		p {
 			font-family: Consolas,Courier,monospace;
 		}
-		#chat {
-			color: white;
-			font-family: arial;
-		}
-		#resultpanel, #code {
-			height: 300px;
-		}
-		#resultpanel {
-			border: 1px solid #CCCCCC;
-			padding: 4px 6px;
-		}
-		body {
-			padding: 10px;
-		}
-		a {
-			background-color: white;
-		}
 		#b {
 			background-color: lightgrey;
 			border: 2px solid black;
@@ -46,24 +29,25 @@
 			display: inline-block;
 			font-family: Segoe UI Light,Helvetica,Arial,sans-serif;
 		}
-		#code {
-			width: 100%;
-			font-family: Consolas,"Courier New",monospace;
+		body {
+			padding: 10px;
 		}
 		</style>
 
-		<script src="http://code.jqery.com/jquery.js"></script>
+		<script src="{{url_for('static', filename='jquery.js')}}"></script>
 		
 		<script>
-		function go() { 
-			var a = document.forms[0].elements[0].value;
-			document.location = "/project/" + a;
-		}
+		$(function() {
+			$("#go").click(function() { 
+				var p = $("#pro").val();
+				window.location = "/project/" + p;
+			});
+		});
 		</script>
 		
 		<script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
 		
-		<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+		<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}"/>
 	</head>
 
 	<body>
@@ -75,14 +59,23 @@
 		</div>
 		<div class="row-fluid" id="panel">
 			<div class="span6">
-				<p>CodeSwap is a collaborative coding solution. People can "swap" code with each other, and also chat. Right now CodeSwap supports only HTML and JavaScript but expect more soon! It's also preloaded with JQuery and Bootstrap.</p>
+				<p>CodeSwap is a collaborative coding solution. People can "swap" code with each other, and also chat. Right now CodeSwap supports only website creation right now but expect more soon! It's also preloaded with JQuery and Bootstrap.</p>
+				<p>You need to extend your HTML files with a .html extension otherwise Live Preview will not work.</p>
+				<p>To add Bootstrap:</p>
+				<pre>&lt;script src="/static/bootstrap/js/bootstrap.min.js"&gt;&lt;/script&gt;<br/>&lt;link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css"/&gt;</pre>
+				
+				<h2>Bugs and Missing Features</h2>
+				<ul>
+					<li><p>As of the current release, you can only have .html and .css files</p></li>
+					<li><p>Do NOT delete the index.html file, it will mess up your project</p></li>
+				</ul>
 			</div>
 			<div class="span6">
 				<h4>Create or load a CodeSwap project</h4>
 				<form>
 					<input type="text" placeholder="just type in the name of a project" id="pro"/><br/>
 				</form>
-				<input type="button" value="Create/Load" onclick="go()"/>
+				<input type="submit" value="Create/Load" id="go"/>
 			</div>
 		</div>
 	</body>
