@@ -144,7 +144,10 @@ def elgible(name):
 def view(name, filename):
 	proj = projects[name]
 	if filename.endswith(".html"):
-		return render_template('view.html', code=proj.files[filename])
+		if filename in proj.files:
+			return render_template('view.html', code=proj.files[filename])
+		else:
+			return "<h1>404 Not Found</h1>"
 	else:
 		return Response(proj.files[filename], mimetype='text/css')
 
@@ -231,7 +234,10 @@ def send_code(name):
 def get_code(name):
 	filename = request.args.get("filename", "index.html")
 	proj = projects[name]
-	return proj.files[filename]
+	if filename in proj.files:
+		return proj.files[filename]
+	else:
+		return "<h1>" + filename + "</h1><p>This file has been deleted</p>"
 
 @app.route("/project/<name>/files/list")
 def get_files(name):

@@ -7,12 +7,12 @@
 				code = "";
 				setInterval(function() {
 					jQuery.get("{{url_for('get_code', name=project)}}", {'filename':'{{fname}}'}, function(data) {
-						$("body").html(data);
+						$("#codeswaphtml").html(data);
 					}, "text");
 				},oneSecond);
 			});
 		</script>
 	</head>
-	<body>
-	</body>
+	<div id="codeswaphtml">
+	</div>
 </html>
