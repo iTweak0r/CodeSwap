@@ -147,6 +147,7 @@
 			
 			var renderRoot = "{{url_for('render', name=project, fname='')}}";
 			var editor = CodeMirror.fromTextArea($("#code").get(0));
+			var chatNumLines = 0;
 			
 			window.codeswap = function(pw, u) {
 				window.displayFile(filename);
@@ -203,15 +204,23 @@
 					jQuery.get("{{url_for('check', name=project)}}", {"lastid":lastid, "pw":pw, "user":u}, function(data) {
 						var datalist = $.parseJSON(data);
 						//message = {id:data}
-						maxnum = 0
+						var maxnum = 0;
 						for (var i in datalist) {
 							$('#chat').append("<br>" + datalist[i]);
+							chatNumLines++;
 							if (i > maxnum) {
 								maxnum = i;
 							}
 						}
 						if (maxnum > lastid) {
 							lastid = maxnum;
+						}
+						
+						if (chatNumLines > 8) {
+							$("#chat").html("");
+							chatNumLines = 0;
+							lastid = 0;
+							jQuery.get("{{url_for('clearmsgs', name=project)}}", {"pw":pw, "user":u});
 						}
 					}, "text");
 				},oneSecond);

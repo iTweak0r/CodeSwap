@@ -189,7 +189,7 @@ def delete_file(name):
 		print "HACKARR!"
 		return "false"
 	
-@app.route("/project/<name>/send", methods=['POST'])
+@app.route("/project/<name>/msgs/send", methods=['POST'])
 def newmessage(name):
 	pw = request.form["pw"]
 	proj = projects[name]
@@ -202,7 +202,7 @@ def newmessage(name):
 		print "HACKARR!"
 		return "false"
 
-@app.route("/project/<name>/check")
+@app.route("/project/<name>/msgs/check")
 def check(name):
 	pw = request.args.get("pw")
 	proj = projects[name]
@@ -210,11 +210,25 @@ def check(name):
 	if not check_token(name, pw, user) == "false":
 		lastid = int(request.args.get("lastid", "null")) #return null as default so it cannot be converted to an int
 		#print proj.msgs
+		print lastid
+		print proj.msgid
 		if lastid != proj.msgid:
 			return jsonify(proj.msgs[lastid:proj.msgid])
 		return jsonify([])
 	else:
 		return jsonify([])
+		
+@app.route("/project/<name>/msgs/clear")
+def clearmsgs(name):
+	pw = request.args.get("pw")
+	proj = projects[name]
+	user = request.args.get("user")
+	if not check_token(name, pw, user) == "false":
+		proj.msgs = []
+		proj.msgid = 1
+		return "True"
+	else:
+		return "False"
 		
 @app.route("/project/<name>/code/send")
 def send_code(name):
