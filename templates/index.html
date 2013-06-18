@@ -215,15 +215,16 @@
 						if (maxnum > lastid) {
 							lastid = maxnum;
 						}
-						
-						if (chatNumLines > 8) {
-							$("#chat").html("");
-							chatNumLines = 0;
-							lastid = 0;
-							jQuery.get("{{url_for('clearmsgs', name=project)}}", {"pw":pw, "user":u});
-						}
 					}, "text");
 				},oneSecond);
+				setInterval(function() {
+					if (chatNumLines > 8) {
+						$("#chat").html("");
+						chatNumLines = 0;
+						lastid = 0;
+						jQuery.get("{{url_for('clearmsgs', name=project)}}", {"pw":pw, "user":u});
+					}
+				}, oneSecond);
 				$("#expand").click(function() {
 					jQuery.get("{{url_for('get_files', name=project)}}", {'user':u, 'pw':pw}, function(data) {
 						$("#files").html(data);
