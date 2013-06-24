@@ -18,6 +18,8 @@ class Project(object):
 		self.name   = name
 		self.msgid  = 1
 		self.tokens = {}
+		self.online = []
+		self.logcounts = {}
 		#self.online = []
 		self.files  = {"index.html":"Just type HTML..."}
 		
@@ -64,26 +66,43 @@ def index(name):
 		projects[name] = Project(name)
 	return render_template('index.html', startf="index.html", project=name, turnopen=TURN_MESSAGE)
 
-
-# disabled userlist code #
-	
-"""
-@app.route("/project/<name>/users/add")
-def adduser(name):
+@app.route("/project/<name>/whoson/add")
+def login(name):
 	proj = projects[name]
-	u = request.args.get("u", None)
-	if not u is None:
-		proj.online.append(u)
+	u = request.args.get("user", None)
+	if u in proj.logcounts:
+		proj.logcounts[u] += 1
+	else:
+		proj.logcounts[u] = 1
+	proj.online.append(u)
+	print("Someone Logged In")
+	if not checkon(proj, u):
 		return "true"
 	return "false"
-		
-@app.route("/project/<name>/users/remove")
-def deluser(name):
+
+@app.route("/project/<name>/whoson")
+def whoson(name):
 	proj = projects[name]
-	u = request.args.get("u", "")
+	return json.dumps(proj.online)
+
+def checkon(proj, user):
+	if proj.logcounts < 2 and user in proj.tokens.keys():
+		return True
+	else:
+		return False
+		
+@app.route("/project/<name>/whoson/remove")
+def logout(name):
+	proj = projects[name]
+	print("Someone Logged Out")
+	u = request.args.get("user", "")
+	print(proj.online)
 	proj.online.remove(u)
+	proj.logcounts[u] -= 1
+	print(proj.logcounts)
+	proj.tokens[u] = None;
+	print(proj.online)
 	return "true"
-"""
 
 def rand_token():
 	symbols = ["@", "*", "&", "%", "#", "$"]
@@ -207,7 +226,7 @@ def check(name):
 	pw = request.args.get("pw")
 	proj = projects[name]
 	user = request.args.get("user")
-	if not check_token(name, pw, user) == "false":
+	if not check_token(name, pw, user) == "false" or proj.logcounts[user] == 1:
 		lastid = int(request.args.get("lastid", "null")) #return null as default so it cannot be converted to an int
 		#print proj.msgs
 		print lastid
@@ -216,7 +235,7 @@ def check(name):
 			return jsonify(proj.msgs[lastid:proj.msgid])
 		return jsonify([])
 	else:
-		return jsonify([])
+		return jsonify({"Hacker"})
 		
 @app.route("/project/<name>/msgs/clear")
 def clearmsgs(name):
@@ -251,7 +270,7 @@ def get_code(name):
 	if filename in proj.files:
 		return proj.files[filename]
 	else:
-		return "<h1>" + filename + "</h1><p>This file has been deleted</p>"
+		return "*" + filename + "*\nThis file has been deleted"
 
 @app.route("/project/<name>/files/list")
 def get_files(name):
