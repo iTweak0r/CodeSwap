@@ -9,6 +9,8 @@
 			font-family: 'entypo';
 			font-size: 15pt;
 			cursor: pointer;
+			cursor: hand;
+			color: white;
 		}
 		#ie {
 			background-color: red;
@@ -30,17 +32,22 @@
 			font-family: "Segoe UI Light",arial,sans-serif;
 			display: inline;
 		}
+		iframe {
+			background-color: white;
+		}
 		h2 {
 			font-family: courier;
 			display: inline;
 		}
 		p {
 			font-family: Consolas,Courier,monospace;
+			color: white;
 		}
 		#chat {
 			color: white;
 			font-family: arial;
 			cursor: pointer;
+			white-space: pre;
 		}
 		#codewrap, #code, .CodeMirror, #resultpanel {
 			border: 1px solid #CCCCCC;
@@ -56,8 +63,9 @@
 			border: none;
 			overflow: auto;
 		}
-		body {
+		#CSBody {
 			padding: 10px;
+			background: url('{{url_for("static", filename="black.BMP")}}');
 		}
 		#b {
 			background-color: lightgrey;
@@ -146,14 +154,44 @@
 			};
 			
 			var renderRoot = "{{url_for('render', name=project, fname='')}}";
-			var editor = CodeMirror.fromTextArea($("#code").get(0));
+			var editor = CodeMirror.fromTextArea($("#code").get(0), {
+  				lineNumbers: true
+			});
 			var chatNumLines = 0;
 			
 			window.codeswap = function(pw, u) {
+				var breakout = 0;
+				$.ajax({
+					type: "GET",
+					url: "{{url_for('login', name=project)}}",
+					async: false,
+					data: {"user":u},
+					success: function(data) {
+     					if (data == "false") {
+     						$("body").html("<p>The username \"" + u + "\" has already been taken.</p><p>Please reload the page and choose a diffrent one.</p>");
+     						$.ajax({
+								type: "GET",
+								url: "{{url_for('logout', name=project)}}",
+								async: false,
+								data: {"user":u},
+								success: function(data) {}
+							});
+     						breakout = 1;
+     					}
+					}
+				});
+				if (breakout == 1) {
+					return 0;
+				}
+
+				$(".CodeMirror").attr("class", "CodeMirror cm-s-solarized");
 				window.displayFile(filename);
 				$("#right").html("<p>Welcome, " + u + "</p>");
 				var oneSecond = 700;
 				var lastid = 0;
+				$("#fullscreen").click(function() {
+					window.location = "/view/{{project}}/" + filename;
+				});
 				$("#submit").click(function() {
 					var m = $("#message").val();
 					jQuery.post("{{url_for('newmessage', name=project)}}", {"message":"["+u+"] "+m, "pw":pw, "user":u}, function() {
@@ -200,26 +238,56 @@
 						}
 					}, "text");
 				}, oneSecond);
+
+				var cmes = "";
+
 				setInterval(function() {
 					jQuery.get("{{url_for('check', name=project)}}", {"lastid":lastid, "pw":pw, "user":u}, function(data) {
 						var datalist = $.parseJSON(data);
-						//message = {id:data}
-						var maxnum = 0;
-						for (var i in datalist) {
-							$('#chat').append("<br>" + datalist[i]);
-							chatNumLines++;
-							if (i > maxnum) {
-								maxnum = i;
+						if (datalist == {"Kind":"Hacker"}) {
+							$("html").html("<p>You tried to hack someone's account or someone tried to hack yours. Please reload the page.</p>");
+						} else {
+							//message = {id:data}
+							var maxnum = 0;
+							for (var i in datalist) {
+								$('#chat').text( $('#chat').text() + "\n" + datalist[i]);
+								cmes = datalist[i];
+								chatNumLines++;
+								if (i > maxnum) {
+									maxnum = i;
+								}
 							}
-						}
-						if (maxnum > lastid) {
-							lastid = maxnum;
+							if (maxnum > lastid) {
+								lastid = maxnum;
+							}
 						}
 					}, "text");
 				},oneSecond);
+
+				setInterval(function() {
+					jQuery.get("{{url_for('whoson', name=project)}}", {}, function(data) {
+						$("#whoson").html("<p>Who's On</p>");
+						var datalist = $.parseJSON(data);
+						for (var i in datalist) {
+							$("#whoson").append("<span style='color: white'>" + datalist[i] + "</p><br/>");
+						}
+					}, "text");
+				},oneSecond);
+
+
+				$(window).bind('beforeunload', function() { 
+					$.ajax({
+						type: "GET",
+						url: "{{url_for('logout', name=project)}}",
+						async: false,
+						data: {"user":u},
+						success: function(data) {}
+					});
+				});
+
 				setInterval(function() {
 					if (chatNumLines > 8) {
-						$("#chat").html("");
+						$("#chat").html(cmes);
 						chatNumLines = 0;
 						lastid = 0;
 						jQuery.get("{{url_for('clearmsgs', name=project)}}", {"pw":pw, "user":u});
@@ -280,12 +348,14 @@
 		)}}"></script>
 	
 		<link rel="stylesheet" href="{{url_for('static', filename='cm/lib/codemirror.css')}}"/>
-		
+
+		<link rel="stylesheet" href="{{url_for('static', filename='cm/theme/solarized.css')}}"/>
+
 		<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
 	
 	</head>
 
-	<body>
+	<body id="CSBody">
 		<!--[if gt IE 7]>
 			<div id="ie">
 				<p>CodeSwap is not supported on this browser.</p>
@@ -303,11 +373,11 @@
 		<p>Editor:</p>
 		<div class="row-fluid" id="panel">
 			<div class="span6" id="codewrap">
-				<textarea id="code" height="900px"></textarea>
+				<textarea id="code" class="cm-s-solarized" height="900px"></textarea>
 			</div>
 			<div class="span5" id="resultpanel">
 				<iframe id="codeframe" src=""></iframe>
-				<a href="{{url_for('view', name=project, filename=startf)}}" target="_blank">Fullscreen View</a>
+				<a id="fullscreen" href="#">Fullscreen View</a>
 			</div>
 			<div class="span5" id="files">
 			</div>
@@ -320,14 +390,15 @@
 				<input id="endturn" type="button" value="End Turn" disabled="true"/>
 			</div>
 		</div>
-		<div class="row" id="chadiv">
-			<div class="span12">
+		<div class="row-fluid" id="chadiv">
+			<div class="span6">
 				<p>Chat:</p> 
-				<div style="background-color: grey; height: 200px; width: auto; overflow-y: auto; " id="chat">
+				<div style="background-color: grey; height: 200px; width: 100%; overflow-x: auto; " id="chat">
 				</div>
 				<input type="text" id="message" placeholder="Type message here" autocomplete="false"></input>
 				<input type="button" id="submit" value="Send">
 			</div>
+			<div id="whoson" class="span6"></div>
 		</div>
 	</body>
 

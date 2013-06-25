@@ -86,7 +86,7 @@ def whoson(name):
 	return json.dumps(proj.online)
 
 def checkon(proj, user):
-	if proj.logcounts < 2 and user in proj.tokens.keys():
+	if proj.logcounts[user] == 1 and user in proj.tokens.keys():
 		return True
 	else:
 		return False
@@ -235,7 +235,7 @@ def check(name):
 			return jsonify(proj.msgs[lastid:proj.msgid])
 		return jsonify([])
 	else:
-		return jsonify({"Hacker"})
+		return jsonify({"Kind":"Hacker"})
 		
 @app.route("/project/<name>/msgs/clear")
 def clearmsgs(name):
