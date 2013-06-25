@@ -70,13 +70,20 @@ def index(name):
 def login(name):
 	proj = projects[name]
 	u = request.args.get("user", None)
+
+	if u is None:
+		print("User: None")
+	else:
+		print("User: " + u)
+
 	if u in proj.logcounts:
 		proj.logcounts[u] += 1
 	else:
 		proj.logcounts[u] = 1
+
 	proj.online.append(u)
 	print("Someone Logged In")
-	if not checkon(proj, u):
+	if checkon(proj, u):
 		return "true"
 	return "false"
 
@@ -226,7 +233,7 @@ def check(name):
 	pw = request.args.get("pw")
 	proj = projects[name]
 	user = request.args.get("user")
-	if not check_token(name, pw, user) == "false" or proj.logcounts[user] == 1:
+	if (not check_token(name, pw, user) == "false") and checkon(proj, user):
 		lastid = int(request.args.get("lastid", "null")) #return null as default so it cannot be converted to an int
 		#print proj.msgs
 		print lastid
@@ -235,7 +242,7 @@ def check(name):
 			return jsonify(proj.msgs[lastid:proj.msgid])
 		return jsonify([])
 	else:
-		return jsonify({"Kind":"Hacker"})
+		return jsonify([])
 		
 @app.route("/project/<name>/msgs/clear")
 def clearmsgs(name):

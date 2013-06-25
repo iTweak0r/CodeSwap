@@ -169,13 +169,7 @@
 					success: function(data) {
      					if (data == "false") {
      						$("body").html("<p>The username \"" + u + "\" has already been taken.</p><p>Please reload the page and choose a diffrent one.</p>");
-     						$.ajax({
-								type: "GET",
-								url: "{{url_for('logout', name=project)}}",
-								async: false,
-								data: {"user":u},
-								success: function(data) {}
-							});
+     						jQuery.get("{{url_for('logout', name=project)}}", {"user":u});
      						breakout = 1;
      					}
 					}
@@ -214,7 +208,7 @@
 				});
 				setInterval(function() {
 					jQuery.get("{{url_for('who_turn', name=project)}}", {}, function(data) {
-						$("#whoturn").html(data);
+						$("#whoturn").text(data);
 						if (data != "{{turnopen}}") {
 							$("#myturn").attr('disabled', 'true');
 							$("#endturn").removeAttr('disabled');
@@ -244,32 +238,28 @@
 				setInterval(function() {
 					jQuery.get("{{url_for('check', name=project)}}", {"lastid":lastid, "pw":pw, "user":u}, function(data) {
 						var datalist = $.parseJSON(data);
-						if (datalist == {"Kind":"Hacker"}) {
-							$("html").html("<p>You tried to hack someone's account or someone tried to hack yours. Please reload the page.</p>");
-						} else {
-							//message = {id:data}
-							var maxnum = 0;
-							for (var i in datalist) {
-								$('#chat').text( $('#chat').text() + "\n" + datalist[i]);
-								cmes = datalist[i];
-								chatNumLines++;
-								if (i > maxnum) {
-									maxnum = i;
-								}
+						//message = {id:data}
+						var maxnum = 0;
+						for (var i in datalist) {
+							$('#chat').text( $('#chat').text() + "\n" + datalist[i]);
+							cmes = datalist[i];
+							chatNumLines++;
+							if (i > maxnum) {
+								maxnum = i;
 							}
-							if (maxnum > lastid) {
-								lastid = maxnum;
-							}
+						}
+						if (maxnum > lastid) {
+							lastid = maxnum;
 						}
 					}, "text");
 				},oneSecond);
 
 				setInterval(function() {
 					jQuery.get("{{url_for('whoson', name=project)}}", {}, function(data) {
-						$("#whoson").html("<p>Who's On</p>");
+						$("#whoson").html("<p>Who's On</p><hr/>");
 						var datalist = $.parseJSON(data);
 						for (var i in datalist) {
-							$("#whoson").append("<span style='color: white'>" + datalist[i] + "</p><br/>");
+							$("#whoson").append("<p>" + datalist[i] + "</p>");
 						}
 					}, "text");
 				},oneSecond);
@@ -370,7 +360,6 @@
 			<br/>
 			<h2>{{project}}</h2>
 		</div>
-		<p>Editor:</p>
 		<div class="row-fluid" id="panel">
 			<div class="span6" id="codewrap">
 				<textarea id="code" class="cm-s-solarized" height="900px"></textarea>
@@ -392,7 +381,7 @@
 		</div>
 		<div class="row-fluid" id="chadiv">
 			<div class="span6">
-				<p>Chat:</p> 
+				<br/>
 				<div style="background-color: grey; height: 200px; width: 100%; overflow-x: auto; " id="chat">
 				</div>
 				<input type="text" id="message" placeholder="Type message here" autocomplete="false"></input>

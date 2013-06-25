@@ -9,6 +9,7 @@
 			right: 10px;
 			display: inline;
 			font-size: large;
+			color: white;
 		}
 		h1 {
 			font-family: Segoe UI Light,arial,sans-serif;
@@ -31,6 +32,11 @@
 		}
 		body {
 			padding: 10px;
+			background: url('{{url_for("static", filename="black.BMP")}}');
+		}
+
+		#panel {
+			color: white;
 		}
 		</style>
 
@@ -56,6 +62,7 @@
 		</div>
 		<div id="b">
 			<h1>CodeSwap</h1>
+			<p style="color: red">The site is undergoing changes right now. Please do not use it until testing is finished.</p>
 		</div>
 		<div class="row-fluid" id="panel">
 			<div class="span6">
@@ -63,17 +70,21 @@
 				<p>You need to extend your HTML files with a .html extension otherwise Live Preview will not work.</p>
 				<p>To add Bootstrap:</p>
 				<pre>&lt;script src="/static/bootstrap/js/bootstrap.min.js"&gt;&lt;/script&gt;<br/>&lt;link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css"/&gt;</pre>
+				<p>jQuery:</p>
+				<pre>&lt;script src="/static/jquery.js"&gt;&lt;/script&gt;</pre>
 				
 				<h4>Bugs and Missing Features</h4>
 				<ul>
 					<li><p>As of the current release, you can only have .html and .css files</p></li>
 					<li><p>To get Javascript to work, go to <b>Fullscreen View</b> on your file</p></li>
+					<li><p>IE (Internet Explorer) and Opera do not work with this website. Using them might cause the server to crash so please upgrade to Firefox or Chrome.</p></li>
 				</ul>
 			</div>
 			<div class="span6">
 				<h4>Create or load a CodeSwap project</h4>
 				<form>
 					<input type="text" placeholder="just type in the name of a project" id="pro"/><br/>
+					<p>(Correct caps required)</p>
 				</form>
 				<input type="submit" value="Create/Load" id="go"/>
 			</div>
