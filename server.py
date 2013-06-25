@@ -125,9 +125,10 @@ def rand_token():
 def check_password(name, pw, user):
 	proj = projects[name]
 	if passwords.verify(pw, proj.hash):
-		token = rand_token()
-		proj.tokens[user] = token
-		return token
+		if (not user in proj.logcounts) or proj.logcounts[user] == 0:
+			token = rand_token()
+			proj.tokens[user] = token
+			return token
 	else:
 		return "false"
 		

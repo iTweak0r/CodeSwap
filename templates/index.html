@@ -114,6 +114,12 @@
 					});
 				}
 			};
+
+			window.sendMessage = function(u, pw, m) {
+				jQuery.post("{{url_for('newmessage', name=project)}}", {"message":m, "pw":pw, "user":u}, function() {
+					$("#message").val("");
+				});
+			};
 			
 			window.removeFile = function(u, pw, filename) {
 				if (filename == "index.html") {
@@ -171,6 +177,8 @@
      						$("body").html("<p>The username \"" + u + "\" has already been taken.</p><p>Please reload the page and choose a diffrent one.</p>");
      						jQuery.get("{{url_for('logout', name=project)}}", {"user":u});
      						breakout = 1;
+     					} else {
+     						sendMessage(u, pw, u + " has joined.");
      					}
 					}
 				});
@@ -188,9 +196,7 @@
 				});
 				$("#submit").click(function() {
 					var m = $("#message").val();
-					jQuery.post("{{url_for('newmessage', name=project)}}", {"message":"["+u+"] "+m, "pw":pw, "user":u}, function() {
-						$("#message").val("");
-					});
+					window.sendMessage(u, pw, "[" + u + "] " + m);
 				});
 				$("#myturn").click(function() {
 					jQuery.post("{{url_for('start_turn', name=project)}}", {"name":u, "pw":pw, "user":u},function(data) {
@@ -266,6 +272,7 @@
 
 
 				$(window).bind('beforeunload', function() { 
+					sendMessage(u, pw, u + " has left.");
 					$.ajax({
 						type: "GET",
 						url: "{{url_for('logout', name=project)}}",
@@ -302,7 +309,7 @@
 					var pw = prompt("Enter the password");
 					jQuery.get("{{url_for('check_pass_login', name=project)}}", {"pw":pw, "user":u}, function(data) {
 						if (data == "false") {
-							$("body").html("<h1>Wrong Password</h1><br/><a href=''>Try Again</a>");
+							$("body").html("<p>Wrong Password</p><br/><a href=''>Try Again</a>");
 						} else {
 							pw = data;
 							window.codeswap(pw, u);
@@ -312,7 +319,7 @@
 					var pw = prompt("What do you want the password to be for this project?");
 					jQuery.get("{{url_for('set_password', name=project)}}", {"pw":pw, "user":u}, function(data) {
 						if (data == "false") {
-							$("body").html("<h1>HACKARR!</h1>");
+							$("body").html("<p>HACKARR!</p>");
 						} else {
 							pw = data;
 							window.codeswap(pw, u);
@@ -380,14 +387,14 @@
 			</div>
 		</div>
 		<div class="row-fluid" id="chadiv">
-			<div class="span6">
+			<div class="span8">
 				<br/>
 				<div style="background-color: grey; height: 200px; width: 100%; overflow-x: auto; " id="chat">
 				</div>
 				<input type="text" id="message" placeholder="Type message here" autocomplete="false"></input>
 				<input type="button" id="submit" value="Send">
 			</div>
-			<div id="whoson" class="span6"></div>
+			<div id="whoson" class="span4"></div>
 		</div>
 	</body>
 
