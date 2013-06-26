@@ -167,11 +167,12 @@
 			
 			window.codeswap = function(pw, u) {
 				var breakout = 0;
+				var typing = false;
 				$.ajax({
 					type: "GET",
 					url: "{{url_for('login', name=project)}}",
 					async: false,
-					data: {"user":u},
+					data: {"user":u, "pw":pw},
 					success: function(data) {
      					if (data == "false") {
      						$("body").html("<p>The username \"" + u + "\" has already been taken.</p><p>Please reload the page and choose a diffrent one.</p>");
@@ -233,7 +234,7 @@
 						} else {
 							var c = editor.getValue();
 							jQuery.get("{{url_for('send_code', name=project)}}", {"code":c, "filename":filename, "pw":pw, "user":u}, function(data) {if (data == "false") {
-								$("body").html("<H1>HACKARR!</H1>");
+								$("body").html("<p>HACKARR!</p><p>If you see this, it means someone tried to hack your account. Sorry!</p><p><small>(Or, maybe you tried to hack someone else's)</small></p>");
 							} });
 						}
 					}, "text");
@@ -270,6 +271,18 @@
 					}, "text");
 				},oneSecond);
 
+				setInterval(function() {
+					jQuery.get("{{url_for('typing', name=project)}}", {}, function(data) {
+						$("#typing").html("<p>Who's Chatting</p><hr/>");
+						var datalist = $.parseJSON(data);
+						for (var i in datalist) {
+							if (datalist[i] == "true") {
+								$("#typing").append("<p>" + i + "</p>");
+							}
+						}
+					}, "text");
+				},oneSecond);
+
 
 				$(window).bind('beforeunload', function() { 
 					sendMessage(u, pw, u + " has left.");
@@ -301,6 +314,15 @@
 						$("#submit").click();
 					}
 				});
+				setInterval(function() {
+					typing = true
+					if ($("#message").val() == "") {
+						jQuery.get("{{url_for('set_typing', name=project)}}", {"u":u, "typing":"false"});
+					} else {
+						jQuery.get("{{url_for('set_typing', name=project)}}", {"u":u, "typing":"true"});
+					}
+				}, 1000);
+
 			};
 			
 			var u = prompt("Please type in your username");
@@ -394,7 +416,9 @@
 				<input type="text" id="message" placeholder="Type message here" autocomplete="false"></input>
 				<input type="button" id="submit" value="Send">
 			</div>
-			<div id="whoson" class="span4"></div>
+			<div id="typing" class="span2"></div>
+			<div id="whoson" class="span2"></div>
+			</div>
 		</div>
 	</body>
 

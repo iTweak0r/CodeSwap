@@ -20,6 +20,7 @@ class Project(object):
 		self.tokens = {}
 		self.online = []
 		self.logcounts = {}
+		self.userstyping = {}
 		#self.online = []
 		self.files  = {"index.html":"Just type HTML..."}
 		
@@ -55,6 +56,12 @@ def save_file(name, proj):
 	with open(npath, 'w') as f:
 		f.write(to_json(proj))
 
+def checkon(proj, user):
+	if proj.logcounts[user] == 1 and user in proj.tokens.keys():
+		return True
+	else:
+		return False
+
 @app.route("/")
 def welcome():
 	bootstrapcss = url_for('static', filename='bootstrap/css/bootstrap.min.css')
@@ -66,7 +73,7 @@ def index(name):
 		projects[name] = Project(name)
 	return render_template('index.html', startf="index.html", project=name, turnopen=TURN_MESSAGE)
 
-@app.route("/project/<name>/whoson/add")
+@app.route("/project/<name>/users/add")
 def login(name):
 	proj = projects[name]
 	u = request.args.get("user", None)
@@ -81,34 +88,39 @@ def login(name):
 	else:
 		proj.logcounts[u] = 1
 
+	proj.userstyping[u] = "false"
+
 	proj.online.append(u)
 	print("Someone Logged In")
 	if checkon(proj, u):
 		return "true"
 	return "false"
 
-@app.route("/project/<name>/whoson")
+@app.route("/project/<name>/users")
 def whoson(name):
 	proj = projects[name]
 	return json.dumps(proj.online)
 
-def checkon(proj, user):
-	if proj.logcounts[user] == 1 and user in proj.tokens.keys():
-		return True
-	else:
-		return False
+@app.route("/project/<name>/typing")
+def typing(name):
+	proj = projects[name]
+	return json.dumps(proj.userstyping)
+
+@app.route("/project/<name>/typing/set")
+def set_typing(name):
+	proj = projects[name]
+	u = request.args.get("u")
+	proj.userstyping[u] = request.args.get("typing")
+	return "true"
 		
-@app.route("/project/<name>/whoson/remove")
+@app.route("/project/<name>/users/remove")
 def logout(name):
 	proj = projects[name]
-	print("Someone Logged Out")
 	u = request.args.get("user", "")
-	print(proj.online)
 	proj.online.remove(u)
 	proj.logcounts[u] -= 1
-	print(proj.logcounts)
 	proj.tokens[u] = None;
-	print(proj.online)
+	proj.userstyping[u] = "false"
 	return "true"
 
 def rand_token():
@@ -192,7 +204,7 @@ def create_file(name):
 	pw = request.args.get("pw")
 	user = request.args.get("user")
 	fname = request.args.get("filename")
-	if not check_token(name, pw, user) == "false":
+	if (not check_token(name, pw, user) == "false") and checkon(proj, user):
 		if fname.endswith(".html"):
 			proj.files[request.args.get('filename')] = 'Just type HTML...'
 		else:
@@ -209,7 +221,7 @@ def delete_file(name):
 	pw = request.args.get("pw")
 	user = request.args.get("user")
 	fname = request.args.get("filename")
-	if not check_token(name, pw, user) == "false":
+	if (not check_token(name, pw, user) == "false") and checkon(proj, user):
 		del proj.files[fname]
 		return "true"
 	else:
@@ -221,7 +233,7 @@ def newmessage(name):
 	pw = request.form["pw"]
 	proj = projects[name]
 	user = request.form["user"]
-	if not check_token(name, pw, user) == "false":
+	if (not check_token(name, pw, user) == "false") and checkon(proj, user):
 		proj.msgs.append([proj.msgid,request.form['message']])
 		proj.msgid += 1
 		return "true"
