@@ -104,6 +104,7 @@ def whoson(name):
 @app.route("/project/<name>/typing")
 def typing(name):
 	proj = projects[name]
+	print proj.userstyping
 	return json.dumps(proj.userstyping)
 
 @app.route("/project/<name>/typing/set")
