@@ -109,7 +109,7 @@
 			
 			window.displayFile = function(filename) {
 				$("#codeframe").attr("src", renderRoot + filename);
-				$("#fulscreen").attr("href", "/view/{{project}}/" + filename);
+				$("#fullscreen").attr("href", "/view/{{project}}/" + filename);
 			};
 			
 			window.newFile = function(u, pw) {
@@ -198,9 +198,6 @@
 				$("#right").html("<p>Welcome, " + u + "</p>");
 				var oneSecond = 700;
 				var lastid = 0;
-				$("#fullscreen").click(function() {
-					window.location = "/view/{{project}}/" + filename;
-				});
 				$("#submit").click(function() {
 					var m = $("#message").val();
 					window.sendMessage(u, pw, "[" + u + "] " + m);
@@ -410,7 +407,7 @@
 			</div>
 			<div class="span5" id="resultpanel">
 				<iframe id="codeframe" src=""></iframe>
-				<a id="fullscreen" href="/view/{{project}}/index.html">Fullscreen View</a>
+				<span class="entypo-resize-full"/> <a target="_blank" id="fullscreen" href="/view/{{project}}/index.html">Fullscreen View</a>
 			</div>
 			<div class="span5" id="files">
 			</div>
