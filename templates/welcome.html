@@ -48,6 +48,11 @@
 				var p = $("#pro").val();
 				window.location = "/project/" + p;
 			});
+			$("input").bind("keydown", function(e) {
+				if (e.keyCode == 13) { //enter key
+					$("#go").click();
+				}
+			});
 		});
 		</script>
 		
@@ -66,8 +71,8 @@
 		</div>
 		<div class="row-fluid" id="panel">
 			<div class="span6">
-				<p>CodeSwap is a collaborative coding solution. People can "swap" code with each other, and also chat. Right now CodeSwap supports only website creation right now but expect more soon! It's also preloaded with JQuery and Bootstrap.</p>
-				<p>You need to extend your HTML files with a .html extension otherwise Live Preview will not work.</p>
+				<p>CodeSwap is a collaborative coding solution. People can "swap" code with each other, and also chat. Right now CodeSwap supports only website creation but expect more soon! It's also preloaded with JQuery and Bootstrap.</p>
+				<p>You'll need to extend your HTML files with a .html extension otherwise Live Preview will not work.</p>
 				<p>To add Bootstrap:</p>
 				<pre>&lt;script src="/static/bootstrap/js/bootstrap.min.js"&gt;&lt;/script&gt;<br/>&lt;link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css"/&gt;</pre>
 				<p>jQuery:</p>
@@ -82,11 +87,9 @@
 			</div>
 			<div class="span6">
 				<h4>Create or load a CodeSwap project</h4>
-				<form>
-					<input type="text" placeholder="just type in the name of a project" id="pro"/><br/>
-					<p>(Correct caps required)</p>
-				</form>
-				<input type="submit" value="Create/Load" id="go"/>
+				<input type="text" placeholder="just type in the name of a project" id="pro"/><br/>
+				<p>(Correct caps required)</p>
+				<input type="button" value="Create/Load" id="go"/>
 			</div>
 		</div>
 	</body>

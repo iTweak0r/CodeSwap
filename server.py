@@ -110,7 +110,10 @@ def typing(name):
 def set_typing(name):
 	proj = projects[name]
 	u = request.args.get("u")
-	proj.userstyping[u] = request.args.get("typing")
+	if request.args.get("typing") == "true":
+		proj.userstyping[u] = "true"
+	else:
+		proj.userstyping[u] = "false"
 	return "true"
 		
 @app.route("/project/<name>/users/remove")
