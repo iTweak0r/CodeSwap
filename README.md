@@ -1,4 +1,7 @@
 # CodeSwap
-## The collaborative coding solution
+This project was built at age 10 for the CoderDojo Transatlantic Challenge 2013.
 
-CodeSwap is a new webapp that lets people work on a website together, by taking turns and chatting.
+## Features
+- Collaborative, turn-based coding in the browser
+- Stay connected in between turns with built-in chat
+- Watch both code and results update live across computers
